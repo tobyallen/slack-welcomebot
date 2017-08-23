@@ -4,7 +4,7 @@ require 'httparty'
 require 'json'
 
 # This class contains all of the logic for loading, cloning and updating the tutorial message attachments.
-class SlackTutorial
+class WelcomeBot
   # Store the welcome text for use when sending and updating the tutorial messages
   def self.welcome_text
     "Welcome to Slack! We're so glad you're here.\nGet started by completing the steps below."
@@ -100,7 +100,7 @@ class Events
     user_id = event_data['user']['id']
     # Store a copy of the tutorial_content object specific to this user, so we can edit it
     $teams[team_id][user_id] = {
-      tutorial_content: SlackTutorial.new
+      tutorial_content: WelcomeBot.new
     }
     # Send the user our welcome message, with the tutorial JSON attached
     self.send_response(team_id, user_id)
@@ -112,7 +112,7 @@ class Events
     if $teams[team_id][user_id]
       channel = event_data['item']['channel']
       ts = event_data['item']['ts']
-      SlackTutorial.update_item(team_id, user_id, SlackTutorial.items[:reaction])
+      WelcomeBot.update_item(team_id, user_id, WelcomeBot.items[:reaction])
       self.send_response(team_id, user_id, channel, ts)
     end
   end
@@ -123,7 +123,7 @@ class Events
     if $teams[team_id][user_id]
       channel = event_data['item']['channel']
       ts = event_data['item']['message']['ts']
-      SlackTutorial.update_item(team_id, user_id, SlackTutorial.items[:pin])
+      WelcomeBot.update_item(team_id, user_id, WelcomeBot.items[:pin])
       self.send_response(team_id, user_id, channel, ts)
     end
   end
@@ -187,7 +187,7 @@ class Events
         ts = event_data['attachments'].first['ts']
         channel = event_data['channel']
         # Update the `share` section of the user's tutorial
-        SlackTutorial.update_item( team_id, user_id, SlackTutorial.items[:share])
+        WelcomeBot.update_item( team_id, user_id, WelcomeBot.items[:share])
         # Update the user's tutorial message
         self.send_response(team_id, user_id, channel, ts)
       end
@@ -205,14 +205,14 @@ class Events
         as_user: 'true',
         channel: channel,
         ts: ts,
-        text: SlackTutorial.welcome_text,
+        text: WelcomeBot.welcome_text,
         attachments: $teams[team_id][user_id][:tutorial_content]
       )
     else
       $teams[team_id]['client'].chat_postMessage(
         as_user: 'true',
         channel: channel,
-        text: SlackTutorial.welcome_text,
+        text: WelcomeBot.welcome_text,
         attachments: $teams[team_id][user_id][:tutorial_content]
       )
     end
